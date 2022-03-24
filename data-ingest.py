@@ -40,19 +40,27 @@ def write_csv(year, write_name):
                   sheet_name=0, header=header).to_csv(f'data/{write_name}', index=False)
 
 def upload_file(container_name, local_file_name, upload_file_path,
-        connect_str='AZURE_STORAGE_CONNECTION_STRING', overwrite=False):
+        blob_service_client='',
+        overwrite=False):
     if connect_str:
         connect_str = os.getenv(connect_str)
     else:
         raise Exception("Connection string not defined")
+    
+    if blob_service_client:
+        blob_client = blob_service_client.get_blob_client(
+            container=container_name, blob=local_file_name)
+    else:
+        raise Exception("Please provide the BlobServiceClient.")
 
     try:
         # Create the BlobServiceClient object which will be used to create a container client
-        blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+        # blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+        # blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
         # Create a blob client using the local file name as the name for the blob
-        blob_client = blob_service_client.get_blob_client(
-            container=container_name, blob=local_file_name)
+        # blob_client = blob_service_client.get_blob_client(
+            # container=container_name, blob=local_file_name)
 
         # Upload the created file
         print("\nUploading to Azure Storage as blob:\n\t" + local_file_name)
@@ -64,7 +72,22 @@ def upload_file(container_name, local_file_name, upload_file_path,
         print(ex)
 
 if __name__ == "__main__":
+    from azure.keyvault.secrets import SecretClient
+    from azure.identity import DefaultAzureCredential
+
     os.environ['AZURE_STORAGE_CONNECTION_STRING'] = "DefaultEndpointsProtocol=https;AccountName=dataingest002581;AccountKey=Zuz8Bx41arXKz8vSzuB+d5qcDoL40bqpu5VqTASDTUtpV+cXC6QQHe8JaYTJZ2WLh07Yfrcy/wKi6SXR+DPE0g==;EndpointSuffix=core.windows.net"
+    os.environ["KEY_VAULT_NAME"] = 'edavis67-vault'
+    keyVaultName = os.environ["KEY_VAULT_NAME"]
+    KVUri = f"https://{keyVaultName}.vault.azure.net"
+
+    credential = DefaultAzureCredential()
+    client = SecretClient(vault_url=KVUri, credential=credential)
+
+    acct_key = client.get_secret('storage-account-access-key')
+    acct_url = 'wasbs://electricity-data@dataingest002581.blob.core.windows.net'
+
+    blob_service_client = BlobServiceClient.from_connection_string(os.environ['AZURE_STORAGE_CONNECTION_STRING'])
+    blob_service_client = BlobServiceClient(acct_url, acct_key)
     
     start, finish = (2008, 2021)
     # for yr in [1970, 2001, 2008, 2021]:
@@ -98,6 +121,7 @@ if __name__ == "__main__":
             upload_file(container_name='electricity-data',
                         local_file_name=csvname, 
                         upload_file_path=f'/home/azureuser/electricity/data/{csvname}', 
+                        blob_service_client=blob_service_client,
                         overwrite=True)
             os.remove(ufp)
             os.remove(f'/home/azureuser/electricity/data/{csvname}')
@@ -132,7 +156,6 @@ if __name__ == "__main__":
     # # Create the BlobServiceClient object which will be used to create a container client
     # # connect_str = os.environ['AZURE_STORAGE_CONNECTION_STRING']
     connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
-    blob_service_client = BlobServiceClient.from_connection_string(connect_str)
     container_client = blob_service_client.get_container_client('electricity-data')
     # List the blobs in the container
     blob_list = container_client.list_blobs()
