@@ -75,7 +75,7 @@ if __name__ == "__main__":
     from azure.keyvault.secrets import SecretClient
     from azure.identity import DefaultAzureCredential
 
-    os.environ['AZURE_STORAGE_CONNECTION_STRING'] = "DefaultEndpointsProtocol=https;AccountName=dataingest002581;AccountKey=Zuz8Bx41arXKz8vSzuB+d5qcDoL40bqpu5VqTASDTUtpV+cXC6QQHe8JaYTJZ2WLh07Yfrcy/wKi6SXR+DPE0g==;EndpointSuffix=core.windows.net"
+    os.environ['AZURE_STORAGE_CONNECTION_STRING'] = "DefaultEndpointsProtocol=https;AccountName=<ACCT_NAME>;AccountKey=<ACCT_KEY>;EndpointSuffix=core.windows.net"
     os.environ["KEY_VAULT_NAME"] = 'edavis67-vault'
     keyVaultName = os.environ["KEY_VAULT_NAME"]
     KVUri = f"https://{keyVaultName}.vault.azure.net"
