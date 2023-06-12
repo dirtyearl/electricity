@@ -76,7 +76,7 @@ if __name__ == "__main__":
     from azure.identity import DefaultAzureCredential
 
     os.environ['AZURE_STORAGE_CONNECTION_STRING'] = "DefaultEndpointsProtocol=https;AccountName=<ACCT_NAME>;AccountKey=<ACCT_KEY>;EndpointSuffix=core.windows.net"
-    os.environ["KEY_VAULT_NAME"] = 'edavis67-vault'
+    os.environ["KEY_VAULT_NAME"] = '<KEY_VAULT_NAME>'
     keyVaultName = os.environ["KEY_VAULT_NAME"]
     KVUri = f"https://{keyVaultName}.vault.azure.net"
 
